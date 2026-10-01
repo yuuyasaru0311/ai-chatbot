@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>そであい</title>
+<link rel="manifest" href="/static/manifest.json">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+<meta name="theme-color" content="#1f7ae0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="そであい">
+<style>
+:root{--navy:#003366;--blue:#1f7ae0;--sky:#fff3c4;--line:#ffd45c;--fs:18px}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:"Hiragino Sans","Meiryo",sans-serif;background:#dff1ff;font-size:var(--fs);display:flex;justify-content:center;user-select:none}
+body.fs-l{--fs:22px}
+body.fs-xl{--fs:26px}
+button{font-family:inherit;cursor:pointer}
+
+/* ===== 全体 ===== */
+.app{width:100%;max-width:720px;height:100vh;height:100dvh;background:#fff;display:flex;flex-direction:column;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+.header{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;padding:6px 10px;background:var(--blue);border-radius:16px;margin-bottom:8px;touch-action:none;position:relative;overflow:hidden}
+.fl{position:absolute;pointer-events:none;z-index:0}
+.header>*:not(.fl){position:relative;z-index:1}
+.header h1{margin:0;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;font-size:32px;line-height:1.1;color:#fff;letter-spacing:.15em;text-shadow:0 2px 0 rgba(0,0,0,.2)}
+.sub{width:100%;text-align:center;font-size:.7em;color:#e6f3ff;margin-bottom:4px}
+.tools{width:100%;display:flex;align-items:center;justify-content:space-between}
+.fs-group{display:flex}
+.fs-group>*+*{margin-left:6px}
+.fs-btn,.mini-btn{min-width:44px;height:44px;border:2px solid var(--navy);border-radius:12px;background:#fff;color:var(--navy);font-weight:bold;padding:0 6px}
+.fs-btn.active{background:var(--navy);color:#fff}
+.mini-btn{font-size:15px;padding:0 12px}
+
+/* ===== チャット ===== */
+.chat-box{flex:1;min-height:0;overflow-y:auto;border:2px solid #9cd0ff;border-radius:12px;padding:10px;background:#f4faff url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27170%27%20height%3D%27170%27%3E%3Cg%20opacity%3D%27.55%27%3E%3Ccircle%20cx%3D%2726.0%27%20cy%3D%2722.0%27%20r%3D%276.0%27%20fill%3D%27%23ffc2d4%27/%3E%3Ccircle%20cx%3D%2733.6%27%20cy%3D%2727.5%27%20r%3D%276.0%27%20fill%3D%27%23ffc2d4%27/%3E%3Ccircle%20cx%3D%2730.7%27%20cy%3D%2736.5%27%20r%3D%276.0%27%20fill%3D%27%23ffc2d4%27/%3E%3Ccircle%20cx%3D%2721.3%27%20cy%3D%2736.5%27%20r%3D%276.0%27%20fill%3D%27%23ffc2d4%27/%3E%3Ccircle%20cx%3D%2718.4%27%20cy%3D%2727.5%27%20r%3D%276.0%27%20fill%3D%27%23ffc2d4%27/%3E%3Ccircle%20cx%3D%2726%27%20cy%3D%2730%27%20r%3D%274.0%27%20fill%3D%27%23ffd23f%27/%3E%3Ccircle%20cx%3D%27118.0%27%20cy%3D%2756.0%27%20r%3D%274.5%27%20fill%3D%27%23ffe27a%27/%3E%3Ccircle%20cx%3D%27123.7%27%20cy%3D%2760.1%27%20r%3D%274.5%27%20fill%3D%27%23ffe27a%27/%3E%3Ccircle%20cx%3D%27121.5%27%20cy%3D%2766.9%27%20r%3D%274.5%27%20fill%3D%27%23ffe27a%27/%3E%3Ccircle%20cx%3D%27114.5%27%20cy%3D%2766.9%27%20r%3D%274.5%27%20fill%3D%27%23ffe27a%27/%3E%3Ccircle%20cx%3D%27112.3%27%20cy%3D%2760.1%27%20r%3D%274.5%27%20fill%3D%27%23ffe27a%27/%3E%3Ccircle%20cx%3D%27118%27%20cy%3D%2762%27%20r%3D%273.0%27%20fill%3D%27%23ffd23f%27/%3E%3Ccircle%20cx%3D%2764.0%27%20cy%3D%27117.0%27%20r%3D%275.2%27%20fill%3D%27%23c4e0ff%27/%3E%3Ccircle%20cx%3D%2770.7%27%20cy%3D%27121.8%27%20r%3D%275.2%27%20fill%3D%27%23c4e0ff%27/%3E%3Ccircle%20cx%3D%2768.1%27%20cy%3D%27129.7%27%20r%3D%275.2%27%20fill%3D%27%23c4e0ff%27/%3E%3Ccircle%20cx%3D%2759.9%27%20cy%3D%27129.7%27%20r%3D%275.2%27%20fill%3D%27%23c4e0ff%27/%3E%3Ccircle%20cx%3D%2757.3%27%20cy%3D%27121.8%27%20r%3D%275.2%27%20fill%3D%27%23c4e0ff%27/%3E%3Ccircle%20cx%3D%2764%27%20cy%3D%27124%27%20r%3D%273.5%27%20fill%3D%27%23ffd23f%27/%3E%3Ccircle%20cx%3D%27150.0%27%20cy%3D%27145.0%27%20r%3D%273.8%27%20fill%3D%27%23ffc2d4%27/%3E%3Ccircle%20cx%3D%27154.8%27%20cy%3D%27148.5%27%20r%3D%273.8%27%20fill%3D%27%23ffc2d4%27/%3E%3Ccircle%20cx%3D%27152.9%27%20cy%3D%27154.0%27%20r%3D%273.8%27%20fill%3D%27%23ffc2d4%27/%3E%3Ccircle%20cx%3D%27147.1%27%20cy%3D%27154.0%27%20r%3D%273.8%27%20fill%3D%27%23ffc2d4%27/%3E%3Ccircle%20cx%3D%27145.2%27%20cy%3D%27148.5%27%20r%3D%273.8%27%20fill%3D%27%23ffc2d4%27/%3E%3Ccircle%20cx%3D%27150%27%20cy%3D%27150%27%20r%3D%272.5%27%20fill%3D%27%23ffd23f%27/%3E%3Ccircle%20cx%3D%2792.0%27%20cy%3D%2710.0%27%20r%3D%273.0%27%20fill%3D%27%23ffe27a%27/%3E%3Ccircle%20cx%3D%2795.8%27%20cy%3D%2712.8%27%20r%3D%273.0%27%20fill%3D%27%23ffe27a%27/%3E%3Ccircle%20cx%3D%2794.4%27%20cy%3D%2717.2%27%20r%3D%273.0%27%20fill%3D%27%23ffe27a%27/%3E%3Ccircle%20cx%3D%2789.6%27%20cy%3D%2717.2%27%20r%3D%273.0%27%20fill%3D%27%23ffe27a%27/%3E%3Ccircle%20cx%3D%2788.2%27%20cy%3D%2712.8%27%20r%3D%273.0%27%20fill%3D%27%23ffe27a%27/%3E%3Ccircle%20cx%3D%2792%27%20cy%3D%2714%27%20r%3D%272.0%27%20fill%3D%27%23ffd23f%27/%3E%3C/g%3E%3C/svg%3E");user-select:text}
+.message{margin-bottom:12px;line-height:1.6}
+.user-msg{text-align:right}
+.ai-msg{display:flex;align-items:flex-start}
+.av{width:40px;height:40px;flex:none;margin-right:6px;color:#ff8fab}
+.ai-msg .bubble{max-width:calc(100% - 52px)}
+.bubble{display:inline-block;font-size:1.15em;line-height:1.65;padding:10px 14px;max-width:94%;text-align:left;word-break:break-word}
+.user-msg .bubble{background:var(--blue);color:#fff;border-radius:18px 18px 2px 18px}
+.ai-msg .bubble{background:var(--sky);color:#002244;border:2px solid var(--line);border-radius:18px 18px 18px 2px}
+.bubble img{max-width:100%;border-radius:8px;margin-top:8px;display:block}
+.speak-btn{margin-top:8px;padding:6px 12px;font-size:.8em;font-weight:bold;color:var(--navy);background:#fff;border:1.5px solid var(--navy);border-radius:14px;min-height:36px}
+.thinking{color:#557;font-style:italic}
+
+/* ===== 入力バー ===== */
+.preview{display:none;align-items:center;gap:8px;margin-top:6px;padding:6px;background:#e9ecef;border-radius:8px}
+.preview img{max-height:48px;border-radius:6px}
+.preview button{margin-left:auto;width:32px;height:32px;border:0;border-radius:50%;background:#dc3545;color:#fff;font-weight:bold}
+.bar{display:flex;flex-direction:column;margin-top:8px}
+.bar>.row+.row{margin-top:8px}
+.row{display:flex}
+.row>*+*{margin-left:8px}
+.ibtn{flex:1;min-height:72px;border:0;border-radius:18px;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:.75em;font-weight:bold}
+.ibtn .ico{font-size:2.4em;line-height:1}
+.faq-open{background:#e8a317}
+.photo{background:#6f42c1}
+.mic{background:#28a745}
+.mic.rec{background:#d9534f;animation:pulse 1s infinite}
+.send{background:var(--navy)}
+.send,.cancel,.stop-voice{flex:none;width:96px}
+.cancel{background:#d9534f;display:none}
+#userInput{flex:1;min-width:0;height:72px;padding:0 14px;font-size:max(18px,1.05em);border:3px solid var(--navy);border-radius:18px;user-select:text}
+.stop-voice{display:none}
+@keyframes pulse{50%{opacity:.6}}
+
+/* ===== よくある質問モーダル ===== */
+.modal{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(0,20,50,.55);display:none;z-index:10000;align-items:flex-end;justify-content:center}
+.modal.open{display:flex}
+.sheet{width:100%;max-width:720px;max-height:88vh;max-height:88dvh;overflow-y:auto;background:#fff;border-radius:20px 20px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom))}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sheet-head h2{margin:0;font-size:1.1em;color:var(--navy)}
+.close-btn{height:44px;padding:0 16px;border:2px solid var(--navy);border-radius:12px;background:#fff;color:var(--navy);font-weight:bold;font-size:.9em}
+.group-title{margin:12px 0 6px;font-weight:bold;color:var(--navy);font-size:.95em}
+.faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.faq-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:96px;padding:10px 6px;border:2px solid var(--navy);border-radius:16px;background:#f0f6ff;color:var(--navy);font-weight:bold;font-size:.8em;line-height:1.3;text-align:center}
+.faq-card .ico{font-size:2.2em;line-height:1}
+.faq-card:active{background:var(--navy);color:#fff}
+
+/* ===== 小窓モード：音声入力と読み上げだけ ===== */
+.mini-bar{display:none;touch-action:none;cursor:grab}
+.app.mini{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));width:auto;height:auto;max-width:none;padding:6px;border:3px solid var(--navy);border-radius:18px;box-shadow:0 6px 24px rgba(0,0,0,.3);z-index:9999}
+.app.mini .header,.app.mini .chat-box,.app.mini .preview,.app.mini .bar{display:none!important}
+.app.mini .mini-bar{display:flex;flex-direction:column;gap:2px}
+.mini-status{text-align:center;font-size:13px;font-weight:bold;color:var(--navy);min-height:26px;line-height:26px}
+.mini-row{display:flex}
+.mini-row>*+*{margin-left:6px}
+.mini-row .ibtn{flex:none;width:64px;min-height:62px;border-radius:14px;font-size:13px}
+.mini-row .ibtn .ico{font-size:26px}
+.back{background:var(--blue)}
+.readb{background:#e8a317}
+.nextb{display:none;background:#0b7285}
+.mini-bar.has-steps .nextb{display:flex}
+</style>
+</head>
+<body id="body">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="flower" viewBox="0 0 100 100"><g fill="currentColor"><ellipse cx="50" cy="27" rx="14" ry="22" transform="rotate(0 50 50)"/><ellipse cx="50" cy="27" rx="14" ry="22" transform="rotate(72 50 50)"/><ellipse cx="50" cy="27" rx="14" ry="22" transform="rotate(144 50 50)"/><ellipse cx="50" cy="27" rx="14" ry="22" transform="rotate(216 50 50)"/><ellipse cx="50" cy="27" rx="14" ry="22" transform="rotate(288 50 50)"/></g><circle cx="50" cy="50" r="12" fill="#ffd23f" stroke="#f0a43a" stroke-width="2"/></symbol></svg>
+<div class="app" id="app">
+  <div class="header">
+    <svg class="fl" style="left:6px;top:4px;width:44px;height:44px;color:#ffb3c7;transform:rotate(12deg)" aria-hidden="true"><use href="#flower"/></svg><svg class="fl" style="left:46px;top:38px;width:22px;height:22px;color:#fff3a0" aria-hidden="true"><use href="#flower"/></svg><svg class="fl" style="left:74px;top:4px;width:15px;height:15px;color:#fff;opacity:.85" aria-hidden="true"><use href="#flower"/></svg><svg class="fl" style="right:8px;top:3px;width:38px;height:38px;color:#ffd0dc;transform:rotate(-15deg)" aria-hidden="true"><use href="#flower"/></svg><svg class="fl" style="right:52px;top:32px;width:20px;height:20px;color:#fff3a0" aria-hidden="true"><use href="#flower"/></svg><svg class="fl" style="right:86px;top:6px;width:14px;height:14px;color:#fff;opacity:.85" aria-hidden="true"><use href="#flower"/></svg><svg class="fl" style="left:44%;bottom:7px;width:24px;height:24px;color:#ffb3c7" aria-hidden="true"><use href="#flower"/></svg><svg class="fl" style="left:57%;bottom:15px;width:15px;height:15px;color:#fff3a0" aria-hidden="true"><use href="#flower"/></svg>
+    <h1>そであい</h1>
+    <div class="sub">袖ケ浦市 くらしとお仕事の相談</div>
+    <div class="tools">
+      <div class="fs-group" aria-label="文字の大きさ">
+        <button class="fs-btn active" style="font-size:14px" onclick="setFontSize('',this)">あ</button>
+        <button class="fs-btn" style="font-size:18px" onclick="setFontSize('fs-l',this)">あ</button>
+        <button class="fs-btn" style="font-size:23px" onclick="setFontSize('fs-xl',this)">あ</button>
+      </div>
+      <button class="mini-btn" id="miniBtn" onclick="toggleMini()" aria-label="小窓にする">小窓</button>
+    </div>
+  </div>
+
+  <div class="chat-box" id="chatBox"></div>
+
+  <div class="mini-bar" id="dragHeader">
+    <div class="mini-status" id="miniStatus">話しかけてね</div>
+    <div class="mini-row">
+      <button class="ibtn mic" onclick="toggleSpeech()" aria-label="声で話す"><span class="ico">🎤</span>話す</button>
+      <button class="ibtn readb" onclick="miniRead()" aria-label="返事を聞く"><span class="ico">🔊</span><span id="miniReadLbl">聞く</span></button>
+      <button class="ibtn nextb" onclick="nextStep()" aria-label="次の手順"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>次へ</button>
+      <button class="ibtn back" onclick="toggleMini()" aria-label="大画面に戻る"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>大画面</button>
+    </div>
+  </div>
+
+  <div class="preview" id="preview">
+    <img id="previewImg" alt="添付する写真">
+    <span style="font-size:14px;font-weight:bold">写真を選びました</span>
+    <button onclick="removeImage()" aria-label="写真を外す">✕</button>
+  </div>
+
+  <div class="bar">
+    <input type="file" id="imageInput" accept="image/*" hidden onchange="handleImage(event)">
+    <div class="row row-input">
+      <input type="text" id="userInput" placeholder="ここに文字を入力" enterkeyhint="send">
+      <button class="ibtn send" id="sendBtn" onclick="sendMessage()" aria-label="送信"><span class="ico">➤</span>送る</button>
+      <button class="ibtn cancel" id="cancelBtn" onclick="cancelMessage()" aria-label="取り消す"><span class="ico">🛑</span>やめる</button>
+    </div>
+    <div class="row">
+      <button class="ibtn faq-open" onclick="openFaq()" aria-label="よくある質問"><span class="ico">💡</span>質問</button>
+      <button class="ibtn photo" onclick="document.getElementById('imageInput').click()" aria-label="写真を送る"><span class="ico">📷</span>写真</button>
+      <button class="ibtn mic" id="micBtn" onclick="toggleSpeech()" aria-label="声で話す"><span class="ico">🎤</span>話す</button>
+      <button class="ibtn stop-voice" id="stopVoiceBtn" onclick="stopSpeaking()"><span class="ico">⏹</span>止める</button>
+    </div>
+  </div>
+</div>
+
+<!-- よくある質問（大きなアイコン） -->
+<div class="modal" id="faqModal" onclick="if(event.target===this)closeFaq()">
+  <div class="sheet">
+    <div class="sheet-head"><h2>💡 聞きたいことを選んでください</h2><button class="close-btn" onclick="closeFaq()">✕ 閉じる</button></div>
+    <div id="faqBody"></div>
+  </div>
+</div>
+
+<script>
+const sessionId = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
+const FAQ = [
+  {title:'💼 お仕事・シニア就労', items:[
+    ['🧹','シルバー人材センターの仕事','シルバー人材センターではどんな仕事がありますか？'],
+    ['⏰','短時間のお仕事','未経験でもできる短時間の仕事はありますか？'],
+    ['📞','相談窓口','袖ケ浦市内の就労相談窓口を教えてください']]},
+  {title:'📱 スマホの使い方', items:[
+    ['🔠','LINEの文字を大きく','LINEの文字を大きくする方法を教えてください'],
+    ['📶','Wi-Fiのつなぎ方','Wi-Fi（ワイファイ）に接続する方法を教えてください'],
+    ['📲','アプリの入れ方','アプリを追加・ダウンロードする方法は？']]}
+];
+
+let abortCtl = null, pendingImage = null, voices = [], speakingBtn = null;
+const $ = id => document.getElementById(id);
+const appEl = $('app');
+
+/* ---------- 初期メッセージ・FAQ描画 ---------- */
+addMessage('ai','こんにちは！袖ケ浦市での就労やお仕事、スマホの使い方など、気になることを何でも聞いてくださいね。困った画面の写真を送って質問することもできますよ。');
+$('faqBody').innerHTML = FAQ.map(g =>
+  '<div class="group-title">'+g.title+'</div><div class="faq-grid">'+
+  g.items.map(i => '<button class="faq-card" data-q="'+i[2]+'"><span class="ico">'+i[0]+'</span>'+i[1]+'</button>').join('')+'</div>'
+).join('');
+$('faqBody').addEventListener('click', e => {
+  const b = e.target.closest('.faq-card'); if (!b) return;
+  closeFaq(); $('userInput').value = b.dataset.q; sendMessage();
+});
+function openFaq(){ $('faqModal').classList.add('open'); }
+function closeFaq(){ $('faqModal').classList.remove('open'); }
+
+/* ---------- 文字サイズ ---------- */
+function setFontSize(cls, btn){
+  document.body.classList.remove('fs-l','fs-xl');
+  if (cls) document.body.classList.add(cls);
+  document.querySelectorAll('.fs-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* ---------- 写真（送る前に縮小して通信量を節約） ---------- */
+function handleImage(e){
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const max = 1024, r = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      pendingImage = c.toDataURL('image/jpeg', 0.85);
+      $('previewImg').src = pendingImage;
+      $('preview').style.display = 'flex';
+    };
+    img.onerror = () => addMessage('ai', 'この写真は読み込めませんでした。別の写真をお試しくださいね。');
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function removeImage(){
+  pendingImage = null; $('imageInput').value = ''; $('preview').style.display = 'none';
+}
+
+/* ---------- メッセージ表示 ---------- */
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function renderAi(text){
+  return esc(text)
+    .replace(/!\[(.*?)\]\((\/static\/[^)]*)\)/g, (m, alt, src) => '<img src="'+encodeURI(src.replace(/&amp;/g,'&'))+'" alt="'+alt+'">')
+    .replace(/\n/g,'<br>');
+}
+function addMessage(type, text, imgSrc){
+  const div = document.createElement('div');
+  div.className = 'message ' + type + '-msg';
+  const img = imgSrc ? '<img src="'+imgSrc+'" alt="送った写真">' : '';
+  const body = type === 'ai' ? renderAi(text) : esc(text);
+  const btn = type === 'ai' ? '<br><button class="speak-btn" onclick="readAloud(this)">🔊 声で聞く</button>' : '';
+  const av = type === 'ai' ? '<svg class="av" aria-hidden="true"><use href="#flower"/></svg>' : '';
+  div.innerHTML = av + '<div class="bubble"><span class="msg-text">'+body+'</span>'+img+btn+'</div>';
+  div.querySelector('.msg-text').dataset.text = text.replace(/!\[.*?\]\(.*?\)/g,'');
+  $('chatBox').appendChild(div);
+  $('chatBox').scrollTop = $('chatBox').scrollHeight;
+  return div;
+}
+
+/* ---------- 送信 ---------- */
+async function sendMessage(){
+  const text = $('userInput').value.trim();
+  if (!text && !pendingImage) return;
+  const image = pendingImage;
+  addMessage('user', text, image);
+  $('userInput').value = ''; removeImage();
+  toggleSending(true); setStatus('考え中…');
+  const wait = addMessage('ai', '考えています…'); wait.querySelector('.speak-btn').remove(); wait.querySelector('.msg-text').classList.add('thinking');
+  abortCtl = new AbortController();
+  let reply, ok = false;
+  try {
+    const res = await fetch('/chat', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message:text, image:image, session_id:sessionId}), signal: abortCtl.signal});
+    reply = (await res.json()).response; ok = true;
+  } catch (e) {
+    reply = e.name === 'AbortError'
+      ? '送信を取り消しました。ゆっくり考え直して、もう一度お話ししてくださいね。'
+      : 'ただいま混み合っております。1分ほど時間をおいて、もう一度お試しください。';
+  }
+  wait.remove();
+  addMessage('ai', reply);
+  setSteps(ok ? reply : '');
+  if (ok && appEl.classList.contains('mini')) speakCurrent();   // 小窓モードは自動で読み上げ
+  abortCtl = null; toggleSending(false); setStatus(ok ? (steps.length > 1 ? '手順 1 / ' + steps.length : '返事が届きました') : '話しかけてね');
+}
+function cancelMessage(){ if (abortCtl) abortCtl.abort(); }
+function toggleSending(on){
+  $('sendBtn').style.display = on ? 'none' : '';
+  $('cancelBtn').style.display = on ? 'flex' : 'none';
+}
+$('userInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) sendMessage(); });
+
+function setStatus(t){ $('miniStatus').textContent = t; }
+function setMiniRead(on){ $('miniReadLbl').textContent = on ? '止める' : '聞く'; }
+let steps = [], stepIdx = 0, lastReply = '';
+function parseSteps(t){
+  const parts = t.split(/\n+|(?=[①-⑩])/).map(x => x.trim()).filter(Boolean);
+  const n = parts.filter(x => /^[①-⑩]|^[0-9０-９]+[.．)）、]/.test(x)).length;
+  return n >= 2 ? parts : [];
+}
+function setSteps(t){
+  lastReply = t; steps = parseSteps(t); stepIdx = 0;
+  document.querySelector('.mini-bar').classList.toggle('has-steps', steps.length > 1);
+}
+function speakCurrent(){
+  if (steps.length > 1){ speak(steps[stepIdx]); setStatus('手順 ' + (stepIdx + 1) + ' / ' + steps.length); }
+  else if (lastReply){ speak(lastReply.replace(/!\[.*?\]\(.*?\)/g, '')); }
+}
+function nextStep(){
+  if (steps.length < 2) return;
+  if (stepIdx < steps.length - 1){ stepIdx++; speakCurrent(); }
+  else setStatus('これで最後です');
+}
+function miniRead(){
+  if ('speechSynthesis' in window && speechSynthesis.speaking){ stopSpeaking(); return; }
+  if (lastReply) { speakCurrent(); return; }
+  const t = [...document.querySelectorAll('.ai-msg .msg-text:not(.thinking)')].pop();
+  if (t) speak(t.dataset.text);
+}
+
+/* ---------- 読み上げ ---------- */
+function loadVoices(){ if ('speechSynthesis' in window) voices = speechSynthesis.getVoices(); }
+loadVoices();
+if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = loadVoices;
+function speak(text, btn){
+  if (!('speechSynthesis' in window)) { alert('お使いのブラウザは読み上げに対応していません。'); return; }
+  speechSynthesis.cancel(); resetSpeakBtn();
+  const u = new SpeechSynthesisUtterance(text.trim());
+  u.lang = 'ja-JP'; u.rate = 0.88;
+  const ja = voices.filter(v => v.lang.replace('_','-') === 'ja-JP');
+  u.voice = ja.find(v => /Natural|Google|Kyoko|Otoya|Ayaka/.test(v.name)) || ja[0] || null;
+  if (btn){ speakingBtn = btn; btn.textContent = '⏹ 止める'; }
+  setMiniRead(true);
+  u.onend = u.onerror = resetSpeakBtn;
+  speechSynthesis.speak(u);
+}
+function resetSpeakBtn(){ setMiniRead(false); if (speakingBtn){ speakingBtn.textContent = '🔊 声で聞く'; speakingBtn = null; } }
+function readAloud(btn){
+  if (speakingBtn === btn){ stopSpeaking(); return; }
+  speak(btn.closest('.bubble').querySelector('.msg-text').dataset.text, btn);
+}
+function stopSpeaking(){ if ('speechSynthesis' in window) speechSynthesis.cancel(); resetSpeakBtn(); }
+
+/* ---------- 音声入力 ---------- */
+let recognition = null, recording = false;
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SR){
+  recognition = new SR(); recognition.lang = 'ja-JP'; recognition.interimResults = false;
+  recognition.onresult = e => {
+    $('userInput').value = e.results[0][0].transcript;
+    setRecording(false); sendMessage();
+  };
+  recognition.onend = () => setRecording(false);
+  recognition.onerror = e => {
+    setRecording(false);
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed')
+      addMessage('ai', 'マイクが許可されていません。アドレス欄の左のマークをタップして、マイクを「許可」にしてくださいね。');
+    else if (e.error === 'no-speech')
+      addMessage('ai', '声が聞こえませんでした。もう一度、マイクを押してお話しくださいね。');
+  };
+} else { /* 非対応でもボタンは残し、押した時に理由を案内する */ }
+function setRecording(on){
+  recording = on;
+  document.querySelectorAll('.mic').forEach(m => {
+    m.classList.toggle('rec', on);
+    m.innerHTML = on ? '<span class="ico">🛑</span>終わる' : '<span class="ico">🎤</span>話す';
+  });
+  if (on) setStatus('聞いています…');
+}
+function toggleSpeech(){
+  if (!window.isSecureContext){
+    addMessage('ai', 'この接続（http）ではマイクが使えません。https のアドレスで開いてくださいね。'); return;
+  }
+  if (/Line\/|FBAN|FBAV|Instagram/i.test(navigator.userAgent)){
+    addMessage('ai', 'LINEなどのアプリの中ではマイクが使えません。ChromeかSafariで開き直してくださいね。'); return;
+  }
+  if (!recognition){
+    addMessage('ai', 'このブラウザでは声の入力が使えません。AndroidはChrome、iPhoneはSafariで開いてくださいね。'); return;
+  }
+  if (recording){ recognition.stop(); setRecording(false); return; }
+  stopSpeaking();
+  if ('speechSynthesis' in window) {          // iPhoneは、タップ中に一度音を出さないと自動読み上げできない
+    const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u);
+  }
+  try { recognition.start(); setRecording(true); } catch (e) { console.log(e); }
+}
+
+/* ---------- 小窓モード ---------- */
+function toggleMini(){
+  const mini = appEl.classList.toggle('mini');
+  ['left','top','right','bottom'].forEach(p => appEl.style[p] = '');
+  setRecording(recording);
+  closeFaq();
+}
+let drag = null;
+$('dragHeader').addEventListener('pointerdown', e => {
+  if (!appEl.classList.contains('mini') || e.target.closest('button')) return;
+  const r = appEl.getBoundingClientRect();
+  drag = {x:e.clientX, y:e.clientY, l:r.left, t:r.top};
+  appEl.style.right = appEl.style.bottom = 'auto';
+  appEl.style.left = r.left + 'px'; appEl.style.top = r.top + 'px';
+  e.currentTarget.setPointerCapture(e.pointerId);
+});
+$('dragHeader').addEventListener('pointermove', e => {
+  if (!drag) return;
+  const w = appEl.offsetWidth, h = appEl.offsetHeight;
+  appEl.style.left = Math.min(Math.max(0, drag.l + e.clientX - drag.x), innerWidth - w) + 'px';
+  appEl.style.top = Math.min(Math.max(0, drag.t + e.clientY - drag.y), innerHeight - h) + 'px';
+});
+$('dragHeader').addEventListener('pointerup', () => { drag = null; });
+</script>
+</body>
+</html>

@@ -8,3 +8,4 @@ langchain-google-genai
 faiss-cpu
 python-dotenv
 requests
+Pillow

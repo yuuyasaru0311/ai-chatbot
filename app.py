@@ -125,7 +125,7 @@ def chat_endpoint():
         contents.append(prompt_text)
 
         user_chat = client.chats.create(
-            model="gemini-2.5-flash",
+            model="gemini-3.5-flash",
             config={"system_instruction": sys_instruct}
         )
 

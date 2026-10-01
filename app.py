@@ -40,7 +40,7 @@ def init_knowledge_base():
             vectors = []
             for p in cached_paragraphs:
                 res = client.models.embed_content(
-                    model="text-embedding-004",
+                    model="text-embedding-2",
                     contents=p
                 )
                 vector = np.array(res.embeddings[0].values)
@@ -63,7 +63,7 @@ def search_relevant_knowledge_smart(query):
     
     try:
         query_res = client.models.embed_content(
-            model="text-embedding-004",
+            model="text-embedding-2",
             contents=query
         )
         query_vector = np.array(query_res.embeddings[0].values)
@@ -125,7 +125,7 @@ def chat_endpoint():
         contents.append(prompt_text)
 
         user_chat = client.chats.create(
-            model="gemini-3.5-flash",
+            model="gemini-3.8-flash",
             config={"system_instruction": sys_instruct}
         )
 

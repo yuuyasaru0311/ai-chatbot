@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高齢者就労支援 AI相談</title>
+    <style>
+        body { font-family: "Hiragino Sans", "Meiryo", sans-serif; background-color: #f0f4f8; margin: 0; padding: 15px; display: flex; justify-content: center; user-select: none; }
+        
+        .chat-container { width: 100%; max-width: 650px; background: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); padding: 20px; display: flex; flex-direction: column; height: 90vh; box-sizing: border-box; transition: height 0.3s ease, width 0.3s ease; }
+        
+        .chat-container.mini-mode { position: fixed; bottom: 20px; right: 20px; width: 340px; height: 480px; z-index: 9999; padding: 10px; border: 3px solid #003366; cursor: grab; }
+        .chat-container.mini-mode:active { cursor: grabbing; }
+        .chat-container.mini-mode .faq-container { display: none; } 
+        .chat-container.mini-mode .header h1 { font-size: 15px; margin: 0; padding-right: 70px; }
+        .chat-container.mini-mode .size-controls { display: none; }
+        .chat-container.mini-mode .toggle-mini-btn { top: 6px; right: 6px; padding: 4px 8px; font-size: 12px; }
+
+        .header { text-align: center; border-bottom: 3px solid #003366; padding-bottom: 12px; margin-bottom: 15px; position: relative; }
+        
+        .toggle-mini-btn { position: absolute; right: 5px; top: 5px; padding: 6px 12px; font-size: 13px; font-weight: bold; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; z-index: 10; }
+        .toggle-mini-btn:hover { background: #5a6268; }
+
+        .header h1 { margin: 0 0 10px 0; font-size: 24px; color: #003366; padding-right: 90px; padding-left: 10px; }
+
+        .size-controls { display: flex; justify-content: center; align-items: center; gap: 8px; font-weight: bold; color: #333; }
+        .size-btn { padding: 8px 16px; font-size: 16px; font-weight: bold; border: 2px solid #003366; border-radius: 8px; background: white; color: #003366; cursor: pointer; min-height: 44px; }
+        .size-btn.active { background: #003366; color: white; }
+        .font-normal { font-size: 18px; }
+        .font-large { font-size: 22px; }
+        .font-xlarge { font-size: 26px; }
+        
+        .chat-box { flex: 1; overflow-y: auto; border: 2px solid #ccc; border-radius: 12px; padding: 15px; margin-bottom: 10px; background: #fafafa; user-select: text; }
+        .message { margin-bottom: 16px; line-height: 1.6; }
+        .user-msg { text-align: right; }
+        .user-bubble { display: inline-block; background: #003366; color: white; padding: 12px 18px; border-radius: 18px 18px 2px 18px; text-align: left; max-width: 80%; }
+        .ai-msg { text-align: left; }
+        .ai-bubble { display: inline-block; background: #e6f0fa; color: #002244; border: 2px solid #b3d1ff; padding: 12px 18px; border-radius: 18px 18px 18px 2px; max-width: 85%; }
+        
+        .speech-read-btn { display: inline-block; margin-top: 8px; padding: 4px 10px; font-size: 14px; font-weight: bold; color: #003366; background: #ffffff; border: 1.5px solid #003366; border-radius: 12px; cursor: pointer; }
+
+        .faq-container { background: #eef4fb; border: 2px solid #b3d1ff; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+        .faq-title { font-weight: bold; color: #003366; margin-bottom: 8px; font-size: 16px; }
+        .faq-group { margin-bottom: 6px; background: #ffffff; border-radius: 8px; border: 1px solid #ccc; overflow: hidden; }
+        .faq-header { padding: 8px 12px; font-weight: bold; color: #003366; cursor: pointer; background: #f8fafc; font-size: 16px; user-select: none; }
+        .faq-list { padding: 8px; display: flex; flex-wrap: wrap; gap: 8px; background: #ffffff; }
+        .faq-btn { background: #f0f4f8; border: 2px solid #003366; color: #003366; font-size: 15px; font-weight: bold; padding: 8px 12px; border-radius: 16px; cursor: pointer; min-height: 44px; text-align: left; }
+        .faq-btn:active { background: #003366; color: #ffffff; }
+
+        /* 画像選択・プレビュー領域 */
+        .image-preview-area { display: none; align-items: center; gap: 10px; margin-bottom: 8px; padding: 8px; background: #e9ecef; border-radius: 8px; }
+        .image-preview-area img { max-height: 60px; border-radius: 6px; border: 1px solid #ccc; }
+        .remove-img-btn { background: #dc3545; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; font-weight: bold; cursor: pointer; }
+
+        .input-area { display: flex; gap: 8px; user-select: text; flex-wrap: wrap; }
+        input[type="text"] { flex: 1; min-width: 200px; padding: 14px; font-size: 18px; border: 2px solid #003366; border-radius: 10px; box-sizing: border-box; }
+        
+        .img-upload-btn { background-color: #6f42c1; color: white; border: none; padding: 0 14px; font-size: 16px; font-weight: bold; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: 52px; }
+        .action-btn { padding: 0 18px; font-size: 18px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; min-height: 52px; display: flex; align-items: center; justify-content: center; }
+        .send-btn { background-color: #003366; color: white; }
+        .cancel-btn { background-color: #d9534f; color: white; }
+        .mic-btn { background-color: #28a745; color: white; }
+        .mic-btn.recording { background-color: #d9534f; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body class="font-normal" id="body">
+<div class="chat-container" id="chatContainer">
+    <div class="header" id="dragHeader">
+        <button class="toggle-mini-btn" id="miniBtn" onclick="toggleMiniMode()">🗔 小窓にする</button>
+        <h1>👵 高齢者就労支援 AI相談 👴</h1>
+        <div class="size-controls">
+            <span>文字の大きさ：</span>
+            <button class="size-btn active" onclick="setFontSize('normal')">標準</button>
+            <button class="size-btn" onclick="setFontSize('large')">大</button>
+            <button class="size-btn" onclick="setFontSize('xlarge')">特大</button>
+        </div>
+    </div>
+    
+    <div class="chat-box" id="chatBox">
+        <div class="message ai-msg">
+            <div class="ai-bubble">
+                <strong>相談員AI:</strong> こんにちは！袖ケ浦市での就労やお仕事、スマホの使い方など、気になることをなんでも聞いてくださいね。困った画面の写真・写真を送って質問することもできますよ！
+                <br><button class="speech-read-btn" onclick="readAloud(this)">🔊 声で聞く</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-container">
+        <div class="faq-title">💡 タップして質問を選ぶ（困りごとを選ぶ）：</div>
+        <div class="faq-categories">
+            <details class="faq-group">
+                <summary class="faq-header">💼 お仕事・シニア就労について</summary>
+                <div class="faq-list">
+                    <button class="faq-btn" onclick="sendFaq('シルバー人材センターではどんな仕事がありますか？')">シルバー人材センターの仕事</button>
+                    <button class="faq-btn" onclick="sendFaq('未経験でもできる短時間の仕事はありますか？')">初心者向けの短時間ワーク</button>
+                    <button class="faq-btn" onclick="sendFaq('袖ケ浦市内の就労相談窓口を教えてください')">相談窓口の場所と連絡先</button>
+                </div>
+            </details>
+
+            <details class="faq-group">
+                <summary class="faq-header">📱 スマホの使い方について</summary>
+                <div class="faq-list">
+                    <button class="faq-btn" onclick="sendFaq('LINEの文字を大きくする方法を教えてください')">LINEの文字を大きくしたい</button>
+                    <button class="faq-btn" onclick="sendFaq('Wi-Fi（ワイファイ）に接続する方法を教えてください')">Wi-Fiのつなぎ方</button>
+                    <button class="faq-btn" onclick="sendFaq('アプリを追加・ダウンロードする方法は？')">アプリの入れ方</button>
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <!-- 画像添付時のプレビューエリア -->
+    <div class="image-preview-area" id="imgPreviewArea">
+        <img id="imgPreview" src="" alt="添付画像">
+        <span style="font-size: 14px; font-weight: bold; color: #333;">写真が選択されました</span>
+        <button class="remove-img-btn" onclick="removeSelectedImage()">✕</button>
+    </div>
+
+    <div class="input-area">
+        <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+        <button class="img-upload-btn" onclick="document.getElementById('imageInput').click()">📷 写真</button>
+        <input type="text" id="userInput" placeholder="質問を入力するか「声で話す」を押してください">
+        <button class="action-btn mic-btn" id="micBtn" onclick="toggleSpeech()">🎤 声で話す</button>
+        <button class="action-btn send-btn" id="sendBtn" onclick="sendMessage()">送信する</button>
+        <button class="action-btn cancel-btn" id="cancelBtn" onclick="cancelMessage()" style="display: none;">🛑 取り消す</button>
+    </div>
+</div>
+
+<script>
+    let currentAbortController = null;
+    let availableVoices = [];
+    let selectedBase64Image = null;
+
+    function handleImageSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            selectedBase64Image = e.target.result;
+            document.getElementById('imgPreview').src = selectedBase64Image;
+            document.getElementById('imgPreviewArea').style.display = 'flex';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeSelectedImage() {
+        selectedBase64Image = null;
+        document.getElementById('imageInput').value = '';
+        document.getElementById('imgPreviewArea').style.display = 'none';
+    }
+
+    function loadVoices() {
+        if (!('speechSynthesis' in window)) return;
+        availableVoices = window.speechSynthesis.getVoices();
+    }
+    loadVoices();
+    if (typeof window.speechSynthesis !== 'undefined' && window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function toggleMiniMode() {
+        const container = document.getElementById('chatContainer');
+        const miniBtn = document.getElementById('miniBtn');
+        container.classList.toggle('mini-mode');
+        
+        if (container.classList.contains('mini-mode')) {
+            miniBtn.textContent = '🗖 大きくする';
+            container.style.position = 'fixed';
+            container.style.bottom = '20px';
+            container.style.right = '20px';
+            container.style.top = 'auto';
+            container.style.left = 'auto';
+        } else {
+            miniBtn.textContent = '🗔 小窓にする';
+            container.style.position = '';
+            container.style.bottom = '';
+            container.style.right = '';
+            container.style.top = '';
+            container.style.left = '';
+        }
+    }
+
+    const container = document.getElementById('chatContainer');
+    let isDragging = false;
+    let startX, startY, initialLeft, initialTop;
+
+    container.addEventListener('pointerdown', (e) => {
+        if (!container.classList.contains('mini-mode')) return;
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.closest('.chat-box') || e.target.closest('.input-area')) return;
+
+        isDragging = true;
+        container.setPointerCapture(e.pointerId);
+
+        const rect = container.getBoundingClientRect();
+        startX = e.clientX;
+        startY = e.clientY;
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        container.style.right = 'auto';
+        container.style.bottom = 'auto';
+        container.style.left = initialLeft + 'px';
+        container.style.top = initialTop + 'px';
+    });
+
+    container.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        container.style.left = (initialLeft + dx) + 'px';
+        container.style.top = (initialTop + dy) + 'px';
+    });
+
+    container.addEventListener('pointerup', (e) => {
+        if (isDragging) {
+            isDragging = false;
+            container.releasePointerCapture(e.pointerId);
+        }
+    });
+
+    function readAloud(btnElement) {
+        if ('speechSynthesis' in window) {
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                btnElement.textContent = '🔊 声で聞く';
+                return;
+            }
+
+            const bubble = btnElement.parentElement;
+            let textToRead = bubble.innerText.replace('🔊 声で聞く', '').replace('⏹ 止める', '').trim();
+            textToRead = textToRead.replace(/^相談員AI:\s*/, '');
+
+            const utterance = new SpeechSynthesisUtterance(textToRead);
+            utterance.lang = 'ja-JP';
+            utterance.rate = 0.88;
+
+            if (availableVoices.length === 0) {
+                availableVoices = window.speechSynthesis.getVoices();
+            }
+            const naturalVoice = availableVoices.find(voice => 
+                (voice.lang === 'ja-JP' || voice.lang === 'ja_JP') && 
+                (voice.name.includes('Natural') || voice.name.includes('Google') || voice.name.includes('Kyoko') || voice.name.includes('Otoya') || voice.name.includes('Ayaka'))
+            ) || availableVoices.find(voice => voice.lang.includes('ja'));
+
+            if (naturalVoice) {
+                utterance.voice = naturalVoice;
+            }
+
+            utterance.onstart = () => { btnElement.textContent = '⏹ 止める'; };
+            utterance.onend = () => { btnElement.textContent = '🔊 声で聞く'; };
+            utterance.onerror = () => { btnElement.textContent = '🔊 声で聞く'; };
+
+            window.speechSynthesis.speak(utterance);
+        } else {
+            alert('お使いのブラウザは音声読み上げに対応していません。');
+        }
+    }
+
+    function setFontSize(size) {
+        const body = document.getElementById('body');
+        body.className = '';
+        document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+        if (size === 'normal') { body.classList.add('font-normal'); event.target.classList.add('active'); }
+        else if (size === 'large') { body.classList.add('font-large'); event.target.classList.add('active'); }
+        else if (size === 'xlarge') { body.classList.add('font-xlarge'); event.target.classList.add('active'); }
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('userInput');
+        const text = input.value.trim();
+        
+        if (!text && !selectedBase64Image) return;
+
+        currentAbortController = new AbortController();
+        const signal = currentAbortController.signal;
+        
+        let displayHtml = text;
+        if (selectedBase64Image) {
+            displayHtml = `<img src="${selectedBase64Image}" style="max-width: 100%; border-radius: 8px; margin-bottom: 5px;"><br>` + text;
+        }
+
+        appendMessage('あなた', displayHtml, 'user', true);
+        
+        const payloadImage = selectedBase64Image;
+        input.value = '';
+        removeSelectedImage();
+
+        toggleCancelButton(true);
+        
+        try {
+            const res = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text, image: payloadImage }),
+                signal: signal
+            });
+            const data = await res.json();
+            appendMessage('相談員AI', data.response, 'ai');
+        } catch (e) {
+            if (e.name === 'AbortError') {
+                appendMessage('相談員AI', '送信を取り消しました。ゆっくり考え直してから、もう一度お話ししてくださいね。', 'ai');
+            } else {
+                appendMessage('相談員AI', 'ただいま混み合っております。1分ほど時間をおいてから、もう一度お試しください。', 'ai');
+            }
+        } finally {
+            currentAbortController = null;
+            toggleCancelButton(false);
+        }
+    }
+
+    function cancelMessage() {
+        if (currentAbortController) {
+            currentAbortController.abort();
+            currentAbortController = null;
+        }
+    }
+
+    function toggleCancelButton(isSending) {
+        const sendBtn = document.getElementById('sendBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        if (isSending) {
+            sendBtn.style.display = 'none';
+            cancelBtn.style.display = 'flex';
+        } else {
+            sendBtn.style.display = 'flex';
+            cancelBtn.style.display = 'none';
+        }
+    }
+
+    function sendFaq(questionText) {
+        document.getElementById('userInput').value = questionText;
+        sendMessage();
+    }
+
+    function appendMessage(sender, text, type, isHtml = false) {
+        const box = document.getElementById('chatBox');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${type}-msg`;
+        
+        let formattedText = isHtml ? text : text.replace(/!\[(.*?)\]\((.*?)\)/g, '<br><img src="$2" alt="$1" style="max-width: 100%; border-radius: 8px; margin-top: 10px; border: 2px solid #003366;"><br>');
+
+        let speechBtnHtml = '';
+        if (type === 'ai') {
+            speechBtnHtml = '<br><button class="speech-read-btn" onclick="readAloud(this)">🔊 声で聞く</button>';
+        }
+
+        msgDiv.innerHTML = '<div class="' + type + '-bubble"><strong>' + sender + ':</strong> ' + formattedText + speechBtnHtml + '</div>';
+        box.appendChild(msgDiv);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    let recognition = null;
+    let isRecording = false;
+    let isProcessingSpeech = false;
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = 'ja-JP';
+        recognition.interimResults = false;
+        
+        recognition.onresult = (event) => {
+            if (isProcessingSpeech) return;
+            isProcessingSpeech = true;
+            
+            const transcript = event.results[0][0].transcript;
+            document.getElementById('userInput').value = transcript;
+            stopRecording();
+            sendMessage();
+            
+            setTimeout(() => { isProcessingSpeech = false; }, 2000);
+        };
+        
+        recognition.onerror = () => { stopRecording(); isProcessingSpeech = false; };
+        recognition.onend = () => { stopRecording(); };
+    } else {
+        document.getElementById('micBtn').style.display = 'none';
+    }
+
+    function toggleSpeech() {
+        if (!recognition) return;
+        if (isRecording) { 
+            recognition.stop(); 
+            stopRecording(); 
+        } else {
+            try {
+                recognition.start();
+                isRecording = true;
+                const micBtn = document.getElementById('micBtn');
+                micBtn.classList.add('recording');
+                micBtn.textContent = '🛑 お話しください...';
+            } catch(err) {
+                console.log(err);
+            }
+        }
+    }
+
+    function stopRecording() {
+        isRecording = false;
+        const micBtn = document.getElementById('micBtn');
+        micBtn.classList.remove('recording');
+        micBtn.textContent = '🎤 声で話す';
+    }
+</script>
+</body>
+</html>
